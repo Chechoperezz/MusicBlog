@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Recuerdo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Nuevo Recuerdo</h1>
+    <form th:action="@{/memory/save}" th:object="${memory}" method="post">
+        <div class="form-group">
+            <label for="content">Recuerdo</label>
+            <textarea id="content" th:field="*{content}" class="form-control" rows="5"></textarea>
+        </div>
+        <input type="hidden" th:field="*{songId}">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+</body>
+</html>
+

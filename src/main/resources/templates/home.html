@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Music Blog</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+  <h1 class="mb-4">Music Blog</h1>
+
+  <!-- Barra de búsqueda en tiempo real -->
+  <form action="/songs/search" method="GET" class="mb-4">
+    <div class="input-group">
+      <input type="text" class="form-control" name="query" placeholder="Buscar canciones...">
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Lista de publicaciones de canciones -->
+  <div th:each="song : ${songs}" class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title" th:text="${song.title}"></h5>
+      <h6 class="card-subtitle mb-2 text-muted" th:text="${song.artist}"></h6>
+      <!-- Enlace para ver memorias asociadas a la canción -->
+      <a th:href="@{/songs/{songId}/memories(songId=${song.id})}" class="card-link">Ver memorias</a>
+    </div>
+  </div>
+
+  <!-- Formulario para publicar nueva canción -->
+  <div class="card">
+    <div class="card-body">
+      <h2 class="card-title mb-4">Publicar nueva canción</h2>
+      <form th:action="@{/song/publicate}" method="POST">
+        <div class="form-group">
+          <input type="text" class="form-control" name="title" placeholder="Título" th:value="${song.title}">
+        </div>
+        <div class="form-group">
+          <input type="text" class="form-control" name="artist" placeholder="Artista" th:value="${song.artist}">
+        </div>
+        <!-- Agrega los otros campos necesarios -->
+        <button type="submit" class="btn btn-primary">Publicar</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Canción</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Editar Canción</h1>
+    <form th:action="@{/songs/{songId}/edit}" th:object="${song}" method="post">
+        <div class="form-group">
+            <label for="title">Título:</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}" required/>
+        </div>
+        <div class="form-group">
+            <label for="artist">Artista:</label>
+            <input type="text" class="form-control" id="artist" th:field="*{artist}" required/>
+        </div>
+        <div class="form-group">
+            <label for="album">Álbum:</label>
+            <input type="text" class="form-control" id="album" th:field="*{album}"/>
+        </div>
+        <div class="form-group">
+            <label for="genre">Género:</label>
+            <input type="text" class="form-control" id="genre" th:field="*{genre}"/>
+        </div>
+        <div class="form-group">
+            <label for="releaseDate">Fecha de Lanzamiento:</label>
+            <input type="text" class="form-control" id="releaseDate" th:field="*{releaseDate}"/>
+        </div>
+        <div class="form-group">
+            <label for="duration">Duración (en segundos):</label>
+            <input type="number" class="form-control" id="duration" th:field="*{duration}"/>
+        </div>
+        <div class="form-group">
+            <label for="reproductionUrl">URL de Reproducción:</label>
+            <input type="text" class="form-control" id="reproductionUrl" th:field="*{reproductionUrl}"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+</div>
+</body>
+</html>
+
