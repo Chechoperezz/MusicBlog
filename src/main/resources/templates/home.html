@@ -1,53 +1,149 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Music Blog</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Blog Home</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
 <div class="container mt-5">
-  <h1 class="mb-4">Music Blog</h1>
+  <h1 class="text-center mb-4">Welcome to the Music Blog</h1>
 
-  <!-- Barra de búsqueda en tiempo real -->
-  <form action="/songs/search" method="GET" class="mb-4">
-    <div class="input-group">
-      <input type="text" class="form-control" name="query" placeholder="Buscar canciones...">
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="submit">Buscar</button>
-      </div>
-    </div>
-  </form>
-
-  <!-- Lista de publicaciones de canciones -->
-  <div th:each="song : ${songs}" class="card mb-3">
-    <div class="card-body">
-      <h5 class="card-title" th:text="${song.title}"></h5>
-      <h6 class="card-subtitle mb-2 text-muted" th:text="${song.artist}"></h6>
-      <!-- Enlace para ver memorias asociadas a la canción -->
-      <a th:href="@{/songs/{songId}/memories(songId=${song.id})}" class="card-link">Ver memorias</a>
-    </div>
+  <!-- Search Form -->
+  <div class="form-inline mb-4">
+    <input class="form-control mr-2" type="text" id="search-query" placeholder="Search for a song or artist">
   </div>
 
-  <!-- Formulario para publicar nueva canción -->
-  <div class="card">
-    <div class="card-body">
-      <h2 class="card-title mb-4">Publicar nueva canción</h2>
-      <form th:action="@{/song/publicate}" method="POST">
-        <div class="form-group">
-          <input type="text" class="form-control" name="title" placeholder="Título" th:value="${song.title}">
+  <div id="songs-container">
+    <div th:each="song : ${songs}" class="card mb-4">
+      <div class="card-header">
+        <h2 th:text="${song.title}"></h2>
+        <h5 th:text="'by ' + ${song.artist}"></h5>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-primary show-memories" th:data-song-id="${song.id}">Show Memories</button>
+        <div class="memories-container mt-3" th:id="'memories-' + ${song.id}">
+          <!-- Memories will be loaded here -->
         </div>
-        <div class="form-group">
-          <input type="text" class="form-control" name="artist" placeholder="Artista" th:value="${song.artist}">
+        <div class="new-memory-container mt-3">
+          <div class="form-group">
+            <textarea class="form-control" th:id="'memory-content-' + ${song.id}" placeholder="Write your memory here"></textarea>
+          </div>
+          <div class="alert alert-danger" th:id="'error-message-' + ${song.id}" style="display: none;"></div>
+          <button class="btn btn-success save-memory" th:data-song-id="${song.id}">Save Memory</button>
         </div>
-        <!-- Agrega los otros campos necesarios -->
-        <button type="submit" class="btn btn-primary">Publicar</button>
-      </form>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function() {
+    // Function to handle real-time search
+    $('#search-query').on('input', function() {
+      var query = $(this).val();
+      if (query.length > 0) {
+        $.ajax({
+          url: '/songs/searchAjax',
+          type: 'GET',
+          data: { query: query },
+          success: function(songs) {
+            var songsContainer = $('#songs-container');
+            songsContainer.empty();
+            songs.forEach(function(song) {
+              var songHtml = `
+                <div class="card mb-4">
+                  <div class="card-header">
+                    <h2>${song.title}</h2>
+                    <h5>by ${song.artist}</h5>
+                  </div>
+                  <div class="card-body">
+                    <button class="btn btn-primary show-memories" data-song-id="${song.id}">Show Memories</button>
+                    <div class="memories-container mt-3" id="memories-${song.id}">
+                      <!-- Memories will be loaded here -->
+                    </div>
+                    <div class="new-memory-container mt-3">
+                      <div class="form-group">
+                        <textarea class="form-control" id="memory-content-${song.id}" placeholder="Write your memory here"></textarea>
+                      </div>
+                      <div class="alert alert-danger" id="error-message-${song.id}" style="display: none;"></div>
+                      <button class="btn btn-success save-memory" data-song-id="${song.id}">Save Memory</button>
+                    </div>
+                  </div>
+                </div>`;
+              songsContainer.append(songHtml);
+            });
+          }
+        });
+      }
+    });
+
+    // Existing code for show-memories and save-memory functionalities
+    $(document).on('click', '.show-memories', function() {
+      var songId = $(this).data('song-id');
+      var container = $('#memories-' + songId);
+
+      if (container.is(':empty')) {
+        $.ajax({
+          url: '/memory/list?songId=' + songId,
+          type: 'GET',
+          success: function(memories) {
+            var memoriesHtml = '';
+            memories.forEach(function(memory) {
+              memoriesHtml += '<p>' + memory.content + '</p>';
+            });
+            container.html(memoriesHtml);
+          }
+        });
+      } else {
+        container.toggle();
+      }
+    });
+
+    $(document).on('click', '.save-memory', function() {
+      var songId = $(this).data('song-id');
+      var content = $('#memory-content-' + songId).val();
+      var errorContainer = $('#error-message-' + songId);
+
+      $.ajax({
+        url: '/memory/saveAjax',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          content: content,
+          songId: songId
+        }),
+        success: function() {
+          alert('Memory saved successfully!');
+          $('#memory-content-' + songId).val('');
+          errorContainer.hide().empty();
+        },
+        error: function(response) {
+          var errors = response.responseJSON;
+          var errorHtml = '<ul>';
+          errors.forEach(function(error) {
+            errorHtml += '<li>' + error + '</li>';
+          });
+          errorHtml += '</ul>';
+          errorContainer.html(errorHtml).show();
+        }
+      });
+    });
+  });
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 

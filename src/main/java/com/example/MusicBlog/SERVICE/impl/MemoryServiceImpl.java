@@ -29,6 +29,7 @@ public class MemoryServiceImpl implements MemoryService {
     public void saveMemory(MemoryDTO memoryDTO) {
         Memory memory = MemoryMapper.mapMemoryDTOToMemory(memoryDTO);
         memoryRepository.save(memory);
+
     }
 
     @Override

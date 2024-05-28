@@ -8,12 +8,17 @@ import com.example.MusicBlog.SERVICE.SongService;
 import com.example.MusicBlog.SERVICE.UserEntityService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class MemoryController {
@@ -50,6 +55,28 @@ public class MemoryController {
         memoryDTO.setUserId(user.getId());
         memoryService.saveMemory(memoryDTO);
         return "redirect:/songs/" + memoryDTO.getSongId();
+    }
+
+
+    //USER PUBLICATES A MEMORY DIRECTLY FROM THE HOME PAGE
+    @PostMapping("/memory/saveAjax")
+    public  ResponseEntity<?> saveMemoryAjax(@Valid @RequestBody MemoryDTO memoryDTO, BindingResult bindingResult,
+                                            Principal principal) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.toList());
+            return ResponseEntity.badRequest().body(errors);
+        }
+
+        UserEntity user = userEntityService.findByUserName(principal.getName());
+        memoryDTO.setUserId(user.getId());
+        memoryDTO.setCreatedAt(LocalDateTime.now());
+        memoryService.saveMemory(memoryDTO);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/memory/{memoryId}/edit")

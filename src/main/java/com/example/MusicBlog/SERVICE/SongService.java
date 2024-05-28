@@ -9,21 +9,13 @@ public interface SongService {
 
     void saveSong(SongsDTO songsDTO);
 
-    Songs existByArtist(String artist);
-
-    Songs existByTitle(String title);
-
-    Songs existByTitleAndArtist(String title,String artist);
-
-    List<Songs> searchByTitleOrArtist(String query);
-
-    List<Songs> searchByArtist(String artist);
-
-    List<Songs> searchByTitle(String title);
+    List<SongsDTO> searchByTitleOrArtist(String query);
 
     void delete(Long songId);
 
     SongsDTO findSongById(Long songId);
 
     void updateSong(SongsDTO songsDTO);
+
+    Songs existByTitleAndArtist(String title, String artist);
 }

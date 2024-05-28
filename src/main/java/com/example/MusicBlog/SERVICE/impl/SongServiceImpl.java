@@ -8,32 +8,18 @@ import com.example.MusicBlog.SERVICE.SongService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SongServiceImpl implements SongService {
 
     private SongsRepository songsRepository;
     private SongsMapper songsMapper;
+
+
     public void saveSong(SongsDTO songsDTO){
         Songs songs = SongsMapper.mapSongDTOToSong(songsDTO);
         songsRepository.save(songs);
-    }
-
-    @Override
-    public Songs existByArtist(String artist) {
-        Songs songs = songsRepository.findByArtist(artist);
-        return songs;
-    }
-
-    @Override
-    public Songs existByTitle(String title) {
-        Songs songs = songsRepository.findByTitle(title);
-        return songs;
-    }
-
-    @Override
-    public Songs existByTitleAndArtist(String title, String artist) {
-        return null;
     }
 
     public List<Songs> searchByTitle(String title) {
@@ -59,12 +45,20 @@ public class SongServiceImpl implements SongService {
         songsRepository.save(songs);
     }
 
+    @Override
+    public Songs existByTitleAndArtist(String title, String artist) {
+        return songsRepository.findByTitleAndArtist(title, artist);
+    }
+
     public List<Songs> searchByArtist(String artist) {
         return songsRepository.findByArtistContainingIgnoreCase(artist);
     }
 
-    public List<Songs> searchByTitleOrArtist(String query) {
-        return songsRepository.findByTitleContainingIgnoreCaseOrArtistContainingIgnoreCase(query, query);
+    public List<SongsDTO> searchByTitleOrArtist(String query) {
+        List<Songs> songs = songsRepository.searchByTitleOrArtist(query);
+        return songs.stream()
+                .map(SongsMapper::mapSongToSongDTO)
+                .collect(Collectors.toList());
     }
 
 }

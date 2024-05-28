@@ -2,7 +2,6 @@ package com.example.MusicBlog.CONTROLLERS;
 
 import com.example.MusicBlog.DTO.SongsDTO;
 import com.example.MusicBlog.MODELS.Songs;
-import com.example.MusicBlog.Mappers.SongsMapper;
 import com.example.MusicBlog.SERVICE.SongService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,25 +14,20 @@ import java.util.List;
 
 @Controller
 public class SongsController {
+
     @Autowired
-    private  SongService songService;
-
-    private  SongsMapper songsMapper;
-
+    private SongService songService;
 
     @GetMapping("/publicate")
     public String showPublicationForm(Model model) {
-        SongsDTO songsDTO = new SongsDTO();
-        model.addAttribute("song", songsDTO);
+        model.addAttribute("song", new SongsDTO());
         return "publicate-song";
     }
 
     @PostMapping("/song/publicate")
-    public String publicate(@Valid@RequestParam("song") SongsDTO songsDTO, Model model,
-                            BindingResult bindingResult){
-
+    public String processPublicationForm(@Valid @ModelAttribute("song") SongsDTO songsDTO, Model model,
+                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("song", songsDTO);
             return "publicate-song";
         }
 
@@ -44,17 +38,20 @@ public class SongsController {
 
         songService.saveSong(songsDTO);
         return "redirect:/home";
-
     }
 
-
-    //IMPLEMENT AJAX FOR SIMULTANEOUS SEARCH
     @GetMapping("/songs/search")
     public String searchSongs(@RequestParam("query") String query, Model model) {
-        List<Songs> songs = songService.searchByTitleOrArtist(query);
+        List<SongsDTO> songs = songService.searchByTitleOrArtist(query);
         model.addAttribute("songs", songs);
         model.addAttribute("query", query);
-        return "search";
+        return "search-song";
+    }
+
+    @GetMapping("/songs/searchAjax")
+    @ResponseBody
+    public List<SongsDTO> searchSongsAJAX(@RequestParam("query") String query) {
+        return songService.searchByTitleOrArtist(query);
     }
 
     @GetMapping("/songs/{songId}/delete")
@@ -70,20 +67,16 @@ public class SongsController {
         return "edit-song";
     }
 
-    @PostMapping ("/songs/{songId}/edit")
-    public String editSong(@PathVariable("songId") Long songsId,
-                           @Valid @ModelAttribute("song") SongsDTO songsDTO,
+    @PostMapping("/songs/{songId}/edit")
+    public String editSong(@PathVariable("songId") Long songId, @Valid @ModelAttribute("song") SongsDTO songsDTO,
                            BindingResult bindingResult) {
-
         if (bindingResult.hasErrors()) {
             return "edit-song";
         }
 
-        songsDTO.setId(songsId);
+        songsDTO.setId(songId);
         songService.updateSong(songsDTO);
         return "redirect:/home";
-
     }
-
-
 }
+
